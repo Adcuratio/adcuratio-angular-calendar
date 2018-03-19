@@ -4146,6 +4146,10 @@ angular
 
     }
 
+    function round(date, duration, method) {
+      return moment(Math[method]((+date) / (+duration)) * (+duration));
+    }
+
     function getDayView(events, viewDate, dayViewStart, dayViewEnd, dayViewSplit, dayViewEventWidth, dayViewSegmentSize) {
 
       var dayStart = (dayViewStart || '00:00').split(':');
@@ -4154,7 +4158,8 @@ angular
       var view = calendarUtils.getDayView({
         events: events.map(function(event) { // hack required to work with event API
           var eventPeriod = getRecurringEventPeriod({
-            start: moment(event.startsAt),
+            start: round(moment(event.startsAt), moment.duration(dayViewSplit, 'minutes'), 'floor'),
+            actStart: moment(event.startsAt),
             end: moment(event.endsAt || event.startsAt)
           }, event.recursOn, moment(viewDate).startOf('day'));
           return updateEventForCalendarUtils(event, eventPeriod);
@@ -4183,9 +4188,34 @@ angular
 
     }
 
+    function splitWeekEventWidth(events) {
+      var eventsPosMap = {};
+      events.forEach(function(event) {
+        if (eventsPosMap[event.top]) {
+          eventsPosMap[event.top]++;
+        } else {
+          eventsPosMap[event.top] = 1;
+        }
+      });
+      return events.map(function(event) {
+        return {
+          endsAfterDay: event.endsAfterDay,
+          event: event.event,
+          height: event.height,
+          left: event.left,
+          startsBeforeDay: event.startsBeforeDay,
+          top: event.top,
+          width: event.width,
+          splitFactor: eventsPosMap[event.top],
+          leftOffset: eventsPosMap[event.top] > 1 ? event.left / 150 : 0
+        };
+      });
+    }
+
     function getWeekViewWithTimes(events, viewDate, dayViewStart, dayViewEnd, dayViewSplit) {
       var weekView = getWeekView(events, viewDate);
       var newEvents = [];
+      var newEventsWidSplit = [];
       var flattenedEvents = [];
       weekView.eventRows.forEach(function(row) {
         row.row.forEach(function(eventRow) {
@@ -4201,16 +4231,23 @@ angular
           day.date,
           dayViewStart,
           dayViewEnd,
-          dayViewSplit
+          dayViewSplit,
+          '',
+          '',
+          'weekView'
         ).events;
         newEvents = newEvents.concat(newDayEvents);
       });
+      newEventsWidSplit = splitWeekEventWidth(newEvents);
       weekView.eventRows = [{
-        row: newEvents.map(function(dayEvent) {
+        row: newEventsWidSplit.map(function(dayEvent) {
           var event = dayEvent.event;
           return {
             event: event,
             top: dayEvent.top,
+            height: dayEvent.height,
+            splitFactor: dayEvent.splitFactor,
+            leftOffset: dayEvent.leftOffset,
             offset: calendarUtils.getWeekViewEventOffset({
               event: {
                 start: event.startsAt,

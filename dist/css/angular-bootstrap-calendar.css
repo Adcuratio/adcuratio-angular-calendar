@@ -804,6 +804,9 @@ mwl-calendar .cal-month-box .cal-day-selected {
   width: 150px;
   overflow: hidden;
   padding: 2px 3px !important;
+  height: 30px;
+  line-height: 30px;
+  white-space: nowrap;
 }
 .cal-day-box .day-event a {
   font-size: 12px;
