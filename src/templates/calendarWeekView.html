@@ -54,8 +54,8 @@
               top: vm.showTimes ? ((eventRow.top) + 'px') : 'auto',
               height: vm.showTimes ? ((eventRow.height) + 'px') : 'auto',
               position: vm.showTimes ? 'absolute' : 'inherit',
-              width: vm.showTimes ? (((vm.dayColumnDimensions.width - 60) / vm.view.days.length) / eventRow.splitFactor + 'px') : '',
-              left: vm.showTimes ? (((vm.dayColumnDimensions.width - 60) / vm.view.days.length) * eventRow.offset) + (((vm.dayColumnDimensions.width - 60) / vm.view.days.length) * eventRow.leftOffset / eventRow.splitFactor) + 15 + 'px' : ''
+              width: vm.showTimes ? ('calc(14.28571429% / ' +  eventRow.splitFactor + ')') : '',
+              left: vm.showTimes ? ('calc(14.28571429% * ' + eventRow.offset + ' + 14.28571429% * ' + eventRow.leftOffset + ' / ' + eventRow.splitFactor + ' - 6px)') : ''
             }">
             <div
               class="day-highlight"
